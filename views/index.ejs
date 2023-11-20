@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Helper</title>
+    <style>
+      body {
+          margin: 0;
+          font-family: 'Courier New', Courier, monospace; 
+          background-color: #D0E8F2; 
+          text-align: center;
+      }
+      .header {
+          font-size: 60px; 
+          color: black; 
+          margin: 20px 0; 
+      }
+      .container {
+          max-width: 800px;
+          width: 100%;
+          padding: 60px;
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* shadow effect */
+          background-color: #fff;
+          margin: 20px auto; 
+          border-radius: 15px; /* curved corners */
+      }
+      #displayedCode {
+        background-color: #f4f4f4;
+        border: 1px solid #ddd;
+        padding: 10px;
+        margin-top: 15px;
+        white-space: pre-wrap; 
+      }
+      textarea {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        font-family: 'Courier New', Courier, monospace;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        cursor: pointer;
+        font-family: 'Courier New', Courier, monospace; 
+        border-radius: 10px
+      }
+      button:hover {
+        background-color: #0056b3;
+        border-radius: 10px
+      }
+    </style>
+</head>
+<body>
+<div class="header">Code Buddy</div> 
+
+<div class="container">
+  <!-- Code Submission Form -->
+  <section id="codeSubmission">
+      <h2>Submit Your Code</h2>
+      <form id="codeForm">
+        <textarea id="codeSnippet" placeholder="Paste your code here..." required></textarea>
+        <button type="submit">Submit Code</button>
+      </form>
+      <div id="submissionMessage"></div> <!-- Confirmation message will appear here -->
+      <div id="displayedCode"></div> <!-- Submitted code will appear here -->
+    </section>
+
+  <section id="similarRepos">
+      <h2>Similar Repositories</h2>
+      <div id="repositories">Similar repositories from GitHub based on your code.</div>
+    </section>
+
+  <!-- Comments Section -->
+  <section id="comments">
+      <h2>Comments</h2>
+      <div id="commentSection">Comment any feedback on the code! </div>
+      <!-- Comment Form -->
+      <form id="commentForm">
+        <textarea id="comment" placeholder="Leave a comment..." required></textarea>
+        <button type="submit">Post Comment</button>
+      </form>
+    </section>
+</div>
+
+  <script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+
+  document.getElementById('commentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const commentText = document.getElementById('comment').value;
+    const snippetId = document.getElementById('displayedCode').getAttribute('data-snippet-id');
+
+    socket.emit('comment', { comment: commentText, snippetId: snippetId });
+    document.getElementById('comment').value = '';
+  });
+
+  // Handle incoming comments
+  socket.on('comment', (commentText) => {
+    const commentSection = document.getElementById('commentSection');
+    commentSection.innerHTML += `<p>${commentText}</p>`; // Append comment
+  });
+
+</script>
+</body>
+</html>
+
+

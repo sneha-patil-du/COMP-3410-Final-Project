@@ -1,48 +1,46 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
-const cookieParser = require('cookie-parser'); // If you're using cookie-parser
+const cookieParser = require('cookie-parser'); 
 
-const app = express(); // Initialize express app
+const app = express();
 
 // Set EJS as the view engine
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 
 const server = http.createServer(app);
-const io = socketIo(server); // Initialize socket.io with the HTTP server
+const io = socketIo(server); 
 
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser()); // If you're using cookie-parser
+app.use(cookieParser()); 
 
-// Serve the static HTML file
 app.use(express.static('public'));
 
-// Basic route for homepage
+// basic route for homepage
 app.get('/', (req, res) => {
-  res.render('index'); // Render the EJS view
+  res.render('index'); 
 });
 
 // MongoDB setup and connection
 const mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/db', { useNewUrlParser: true, useUnifiedTopology: true });
 
-// Import models
+// import models
 const CodeSnippet = require('./models/codesnippet');
 const Comment = require('./models/comments');
 
-// Handle a connection request from web clients
+// handle a connection request from web clients
 io.on('connection', (socket) => {
   // Handle comment event
   socket.on('comment', async (data) => {
-    // Ensure 'data' contains 'comment' and 'snippetId'
+    // make sure 'data' contains 'comment' and 'snippetId'
     const newComment = new Comment({ content: data.comment, codeSnippetId: data.snippetId });
     await newComment.save();
-    io.emit('comment', newComment.content); // Emit only once
+    io.emit('comment', newComment.content);
   });
 
   socket.on('disconnect', () => {
@@ -54,7 +52,7 @@ function extractKeywords(codeSnippet, language) {
   const keyTerms = [];
 
   if (language === 'Python') {
-    // Regex to find function names, class names, etc.
+    // use regex to find function and class names
     const regex = /def\s+(\w+)|class\s+(\w+)/g;
     const matches = codeSnippet.matchAll(regex);
 
@@ -63,26 +61,25 @@ function extractKeywords(codeSnippet, language) {
     }
   }
 
-  // Exclude common words and limit the number of keywords
-  const excludedTerms = ['function', 'return', 'class', 'def', 'var']; // Add more common terms
-  const filteredTerms = keyTerms.filter(term => !excludedTerms.includes(term)).slice(0, 5); // Limit to 5 keywords
+  // exclude common words and limit the number of keywords
+  const excludedTerms = ['function', 'return', 'class', 'def', 'var']; // add more common terms
+  const filteredTerms = keyTerms.filter(term => !excludedTerms.includes(term)).slice(0, 10); // limit to 10 keywords
 
-  return filteredTerms.length > 0 ? filteredTerms : ['default', 'keyword']; // Fallback keywords if empty
+  return filteredTerms.length > 0 ? filteredTerms : ['default', 'keyword']; // fallback keywords if empty
 }
-
 
 app.post('/submit-code', async (req, res) => {
   try {
     const newSnippet = new CodeSnippet({ content: req.body.codeSnippet });
     await newSnippet.save();
 
-    // Extract keywords or use the whole code for searchinge
+    // extract keywords 
     const keywords = extractKeywords(newSnippet.content, 'Python');
     console.log("Extracted Keywords:", keywords);
 
-    // Check if keywords array is empty
+    // check if keywords array is empty
     if (keywords.length === 0) {
-      // Send a response back to the client indicating no keywords found
+      // send a response back to the client indicating no keywords found
       return res.status(200).json({ message: "No relevant keywords found in the submitted code." });
     }
     const similarRepos = await searchGitHubRepos(keywords);
@@ -92,10 +89,7 @@ app.post('/submit-code', async (req, res) => {
   }
 });
 
-
-
 const fs = require('fs');
-
 
 let config;
 try {
@@ -109,17 +103,17 @@ const axios = require('axios');
 
 async function searchGitHubRepos(keywords) {
   try {
-    console.log("GitHub Search Keywords:", keywords.join('+')); // Log the search query
+    console.log("GitHub Search Keywords:", keywords.join('+')); // logging the search query
     const response = await axios.get('https://api.github.com/search/repositories', {
       params: {
         q: keywords.join('+'),
         sort: 'stars',
       },
       headers: {
-        'Authorization': `token ${config.GITHUB_TOKEN}`  // Use your GitHub token from config
+        'Authorization': `token ${config.GITHUB_TOKEN}` 
       }
     });
-    console.log("GitHub API Response:", response.data); // Log the response data
+    console.log("GitHub API Response:", response.data);
     return response.data.items;
   } catch (error) {
     console.error('Error fetching from GitHub API:', error);
