@@ -10,7 +10,7 @@ Code Buddy is a web application designed to assist users in finding GitHub repos
 - **Code Submission**: Users can submit their code snippets via a form. Upon submission, the code is processed to extract relevant keywords for searching similar repositories on GitHub.
 - **Repository Suggestions**: The application connects to the GitHub API to find repositories similar to the submitted code snippet. It displays these suggestions in its own section.
 - **Comments Section**: A real-time comments section where users can post and view comments. It's implemented using Socket.io for live updates.
-- **User Interface**: The UI is designed for ease of use with a light blue background, monospace font, and a centered layout with curved corners and shadows for containers.
+- **User Interface**: The UI is designed for easy use while being aesthetic with a light blue background, monospace font, and a centered layout with curved corners and shadows for containers.
 
 ## Technical Details
 
